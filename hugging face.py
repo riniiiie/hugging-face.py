@@ -1,7 +1,26 @@
+# =====================================
+# HUGGING FACE — PRETRAINED MODEL
+# =====================================
+
+# -------------------------------
+# Step 1: Upload Dataset
+# -------------------------------
+from google.colab import files
+uploaded = files.upload()
+
+# -------------------------------
+# Step 2: Import Libraries
+# -------------------------------
+import pandas as pd
 from transformers import pipeline
 
 # -------------------------------
-# Step 1: Load Pretrained Model
+# Step 3: Load Dataset
+# -------------------------------
+df = pd.read_csv(list(uploaded.keys())[0])
+
+# -------------------------------
+# Step 4: Load Pretrained Model
 # -------------------------------
 sentiment_analyzer = pipeline(
     "sentiment-analysis",
@@ -9,31 +28,31 @@ sentiment_analyzer = pipeline(
 )
 
 # -------------------------------
-# Step 2: Same Text Samples
+# Step 5: Select Text Column
 # -------------------------------
-texts = [
-    "Congratulations you won a free gift",
-    "Meeting scheduled tomorrow",
-    "Claim your prize now",
-    "Please review the attached document",
-    "Urgent account verification required",
-    "Let us discuss the project",
-    "Limited offer buy now",
-    "Your OTP is 563829",
-    "Win cash rewards instantly",
-    "Can we reschedule the meeting"
-]
+# Change column name if needed
+text_column = df.columns[0]   # using first column as text
+texts = df[text_column].astype(str).tolist()
 
 # -------------------------------
-# Step 3: Run Sentiment Analysis
+# Step 6: Run Predictions
 # -------------------------------
 results = sentiment_analyzer(texts)
 
 # -------------------------------
-# Step 4: Display Predictions
+# Step 7: Add Predictions to Dataset
 # -------------------------------
-print("\n=== Hugging Face Pretrained Model Predictions ===\n")
+df["Prediction"] = [r["label"] for r in results]
+df["Confidence"] = [r["score"] for r in results]
 
-for text, result in zip(texts, results):
+print("\n=== Dataset with Hugging Face Predictions ===\n")
+print(df.head())
+
+# -------------------------------
+# Step 8: Display Sample Results
+# -------------------------------
+print("\n=== Sample Predictions ===\n")
+
+for text, result in zip(texts[:10], results[:10]):
     print(f"Text: {text}")
     print(f"Prediction: {result['label']} (Confidence: {result['score']:.2f})\n")
