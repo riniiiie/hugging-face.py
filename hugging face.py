@@ -56,3 +56,5 @@ print("\n=== Sample Predictions ===\n")
 for text, result in zip(texts[:10], results[:10]):
     print(f"Text: {text}")
     print(f"Prediction: {result['label']} (Confidence: {result['score']:.2f})\n")
+
+Kaggle link-https://www.kaggle.com/datasets/mabubakrsiddiq/student-exam-performance
