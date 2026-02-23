@@ -1,60 +1,79 @@
+# =====================================
+# NAIVE BAYES — SUPERVISED LEARNING
+# =====================================
+
+# -------------------------------
+# Step 1: Upload Dataset
+# -------------------------------
+from google.colab import files
+uploaded = files.upload()
+
+# -------------------------------
+# Step 2: Import Libraries
+# -------------------------------
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report
 
 # -------------------------------
-# Step 1: Create Training Dataset
+# Step 3: Load Dataset
 # -------------------------------
-data = {
-    "text": [
-        "Congratulations you won a free gift",
-        "Meeting scheduled tomorrow",
-        "Claim your prize now",
-        "Please review the attached document",
-        "Urgent account verification required",
-        "Let us discuss the project",
-        "Limited offer buy now",
-        "Your OTP is 563829",
-        "Win cash rewards instantly",
-        "Can we reschedule the meeting"
-    ],
-    "label": [
-        "Spam", "Not Spam", "Spam", "Not Spam", "Spam",
-        "Not Spam", "Spam", "Not Spam", "Spam", "Not Spam"
-    ]
-}
-
-df = pd.DataFrame(data)
-
-# Convert labels to numeric
-df["label"] = df["label"].map({"Spam": 1, "Not Spam": 0})
+df = pd.read_csv(list(uploaded.keys())[0])
 
 # -------------------------------
-# Step 2: Convert Text to Bag-of-Words
+# Step 4: Data Preprocessing
 # -------------------------------
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(df["text"])
-y = df["label"]
+
+# Drop timestamp if exists
+if 'Timestamp' in df.columns:
+    df = df.drop(columns=['Timestamp'])
+
+# Convert categorical columns → numeric
+df_encoded = pd.get_dummies(df, drop_first=True)
+
+# Select target column (change if needed)
+target_column = df_encoded.columns[-1]
+
+X = df_encoded.drop(columns=[target_column])
+y = df_encoded[target_column]
 
 # -------------------------------
-# Step 3: Train Naïve Bayes Model
+# Step 5: Train-Test Split
 # -------------------------------
-model = MultinomialNB()
-model.fit(X, y)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
 # -------------------------------
-# Step 4: Predict Spam or Not Spam
+# Step 6: Feature Scaling
 # -------------------------------
-print("\n=== Spam Detection System ===")
-email = input("Enter the email text: ")
-
-email_bow = vectorizer.transform([email])
-prediction = model.predict(email_bow)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
 # -------------------------------
-# Step 5: Output Result
+# Step 7: Train Naive Bayes Model
 # -------------------------------
-if prediction[0] == 1:
-    print("Result: 🚨 Spam Email")
-else:
-    print("Result: ✅ Not Spam Email")
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# -------------------------------
+# Step 8: Predictions
+# -------------------------------
+y_pred = model.predict(X_test)
+
+# -------------------------------
+# Step 9: Evaluation
+# -------------------------------
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\n=== Naive Bayes Results ===\n")
+print("Accuracy:", accuracy)
+
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred))
+
+Kaggle link-https://www.kaggle.com/datasets/mabubakrsiddiq/student-exam-performance
